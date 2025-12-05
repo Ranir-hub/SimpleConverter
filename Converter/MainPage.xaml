@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Converter.MainPage">
+
+    <ScrollView>
+        <VerticalStackLayout
+            Padding="30,0"
+            Spacing="25">
+            
+            <HorizontalStackLayout Spacing="25">
+                <DatePicker Date="{Binding Date}"/>
+                <Label Text="{Binding DateText}"/>
+            </HorizontalStackLayout>
+            
+            <HorizontalStackLayout Spacing="25">
+                <Picker ItemsSource="{Binding Currencies}" ItemDisplayBinding="{Binding CharCode}" SelectedItem="{Binding SelectedIn}"/>
+                <Entry Text="{Binding Value1}" FontSize="14" TextColor="White" VerticalOptions="Center" MinimumWidthRequest="100"/>
+            </HorizontalStackLayout>
+            
+            <HorizontalStackLayout Spacing="25">
+                <Picker ItemsSource="{Binding Currencies}" ItemDisplayBinding="{Binding CharCode}" SelectedItem="{Binding SelectedOut}"/>
+                <Entry Text="{Binding Value2}" FontSize="14" TextColor="White" VerticalOptions="Center" MinimumWidthRequest="100"/>
+            </HorizontalStackLayout>
+            
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>
