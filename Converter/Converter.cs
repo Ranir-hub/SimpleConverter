@@ -25,7 +25,7 @@ namespace Converter
     public class Cbr
     {
         [JsonPropertyName("Valute")]
-        public Dictionary<string, Currency>? Valute { get; set; }  
+        public Dictionary<string, Currency>? Valute { get; set; }
     }
 
     public static class GetCurrencies
@@ -83,11 +83,11 @@ namespace Converter
             get => date;
             set
             {
-                if(date != value)
+                if (date != value)
                 {
                     date = value;
                     _ = LoadCurrencies();
-                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(Value2));
                     OnPropertyChanged(nameof(DateText));
                 }
             }
@@ -114,14 +114,17 @@ namespace Converter
             get => value1;
             set
             {
-                value1 = value;
-                if (SelectedIn != null && SelectedOut != null && !wasCalc)
+                if (value1 != value)
                 {
-                    value2 = Math.Round(value1 * SelectedIn.Value / SelectedOut.Value, 4, MidpointRounding.ToEven);
-                    wasCalc = true;
+                    value1 = value;
+
+                    if (SelectedIn != null && SelectedOut != null)
+                    {
+                        value2 = Math.Round(value1 * SelectedIn.Value / SelectedOut.Value, 4, MidpointRounding.ToEven);
+                        OnPropertyChanged(nameof(Value2));
+                    }
                 }
-                OnPropertyChanged(nameof(Value2));
-                wasCalc = false;
+
             }
         }
         private double value2;
@@ -130,14 +133,16 @@ namespace Converter
             get => value2;
             set
             {
-                value2 = value;
-                if (SelectedIn != null && SelectedOut != null && !wasCalc && !isLoading)
+                if (value2 != value)
                 {
-                    value1 = Math.Round(value2 / SelectedIn.Value * SelectedOut.Value, 4, MidpointRounding.ToEven);
-                    wasCalc = true;
+                    value2 = value;
+
+                    if (SelectedIn != null && SelectedOut != null)
+                    {
+                        value1 = Math.Round(value2 / SelectedIn.Value * SelectedOut.Value, 4, MidpointRounding.ToEven);
+                        OnPropertyChanged(nameof(Value1));
+                    }
                 }
-                OnPropertyChanged(nameof(Value1));
-                wasCalc = false;
             }
         }
         private Currency selectedIn;
@@ -146,13 +151,17 @@ namespace Converter
             get => selectedIn;
             set
             {
-                selectedIn = value;
-                if (SelectedIn != null && SelectedOut != null)
+                if (selectedIn != value)
                 {
-                    value2 = Math.Round(value1 * SelectedIn.Value / SelectedOut.Value, 4, MidpointRounding.ToEven);
+                    selectedIn = value;
+                    OnPropertyChanged();
+
+                    if (SelectedIn != null && SelectedOut != null)
+                    {
+                        value2 = Math.Round(value1 * SelectedIn.Value / SelectedOut.Value, 4, MidpointRounding.ToEven);
+                        OnPropertyChanged(nameof(Value2));
+                    }
                 }
-                OnPropertyChanged(nameof(Value2));
-                OnPropertyChanged();
             }
         }
         private Currency selectedOut;
@@ -161,13 +170,17 @@ namespace Converter
             get => selectedOut;
             set
             {
-                selectedOut = value;
-                if (SelectedIn != null && SelectedOut != null && !isLoading)
+                if (selectedOut != value)
                 {
-                    value1 = Math.Round(value2 / SelectedIn.Value * SelectedOut.Value, 4, MidpointRounding.ToEven);
+                    selectedOut = value;
+                    OnPropertyChanged();
+
+                    if (SelectedIn != null && SelectedOut != null && !isLoading)
+                    {
+                        value1 = Math.Round(value2 / SelectedIn.Value * SelectedOut.Value, 4, MidpointRounding.ToEven);
+                        OnPropertyChanged(nameof(Value1));
+                    }
                 }
-                OnPropertyChanged(nameof(Value1));
-                OnPropertyChanged();
             }
         }
         private async Task LoadCurrencies()
@@ -176,8 +189,11 @@ namespace Converter
             isLoading = true;
             Currencies = result.Currencies;
             Date = result.ActualDate;
-            SelectedOut = Currencies.FirstOrDefault(cc => cc.CharCode == Preferences.Get("SelectedOutCC", ""), SelectedOut);
-            SelectedIn = Currencies.FirstOrDefault(cc => cc.CharCode == Preferences.Get("SelectedInCC", ""), SelectedIn);
+            if (SelectedOut == null && SelectedIn == null)
+            {
+                SelectedOut = Currencies.FirstOrDefault(cc => cc.CharCode == Preferences.Get("SelectedOutCC", ""));
+                SelectedIn = Currencies.FirstOrDefault(cc => cc.CharCode == Preferences.Get("SelectedInCC", ""));
+            }
             isLoading = false;
         }
         public async Task Load()
@@ -195,7 +211,6 @@ namespace Converter
             Preferences.Set("SelectedOutCC", (SelectedOut == null ? "" : SelectedOut.CharCode));
         }
 
-        private bool wasCalc = false;
         private bool isLoading;
         public event PropertyChangedEventHandler? PropertyChanged;
         public void OnPropertyChanged([CallerMemberName] string prop = "")
