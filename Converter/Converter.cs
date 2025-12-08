@@ -75,7 +75,7 @@ namespace Converter
     {
         public ConvertersViewModel()
         {
-            Date = DateTime.Today;
+            _ = Load();
         }
         private DateTime date;
         public DateTime Date
@@ -86,24 +86,14 @@ namespace Converter
                 if(date != value)
                 {
                     date = value;
-                    DateText = date.ToString("D");
-                    LoadCurrencies();
+                    _ = LoadCurrencies();
                     OnPropertyChanged();
+                    OnPropertyChanged(nameof(DateText));
                 }
             }
         }
-        private string datetext = DateTime.Today.ToString("D");
-        public string DateText
-        {
-            get => datetext;
-            set {
-                if (datetext != date.ToString("D"))
-                {
-                    datetext = date.ToString("D");
-                    OnPropertyChanged();
-                }
-            }
-        }
+        public string DateText => date.ToString("D");
+
         private ObservableCollection<Currency> currencies;
         public ObservableCollection<Currency> Currencies
         {
@@ -117,7 +107,7 @@ namespace Converter
                 }
             }
         }
-        bool wasCalc = false;
+
         private double value1;
         public double Value1
         {
@@ -125,9 +115,9 @@ namespace Converter
             set
             {
                 value1 = value;
-                if (SelectedIn != null && SelectedOut != null && wasCalc == false)
+                if (SelectedIn != null && SelectedOut != null && !wasCalc)
                 {
-                    value2 = Math.Round(Value1 * SelectedIn.Value / SelectedOut.Value, 2, MidpointRounding.ToEven);
+                    value2 = Math.Round(value1 * SelectedIn.Value / SelectedOut.Value, 4, MidpointRounding.ToEven);
                     wasCalc = true;
                 }
                 OnPropertyChanged(nameof(Value2));
@@ -141,9 +131,9 @@ namespace Converter
             set
             {
                 value2 = value;
-                if (SelectedIn != null && SelectedOut != null && wasCalc == false)
+                if (SelectedIn != null && SelectedOut != null && !wasCalc && !isLoading)
                 {
-                    value1 = Math.Round(Value2 / SelectedIn.Value * SelectedOut.Value, 2, MidpointRounding.ToEven);
+                    value1 = Math.Round(value2 / SelectedIn.Value * SelectedOut.Value, 4, MidpointRounding.ToEven);
                     wasCalc = true;
                 }
                 OnPropertyChanged(nameof(Value1));
@@ -157,9 +147,12 @@ namespace Converter
             set
             {
                 selectedIn = value;
-                OnPropertyChanged();
-                if (SelectedIn != null && SelectedOut != null) value2 = Math.Round(Value1 * SelectedIn.Value / SelectedOut.Value, 2, MidpointRounding.ToEven);
+                if (SelectedIn != null && SelectedOut != null)
+                {
+                    value2 = Math.Round(value1 * SelectedIn.Value / SelectedOut.Value, 4, MidpointRounding.ToEven);
+                }
                 OnPropertyChanged(nameof(Value2));
+                OnPropertyChanged();
             }
         }
         private Currency selectedOut;
@@ -169,19 +162,41 @@ namespace Converter
             set
             {
                 selectedOut = value;
-                OnPropertyChanged();
-                if (SelectedIn != null && SelectedOut != null) value1 = Math.Round(Value2 / SelectedIn.Value * SelectedOut.Value, 2, MidpointRounding.ToEven);
+                if (SelectedIn != null && SelectedOut != null && !isLoading)
+                {
+                    value1 = Math.Round(value2 / SelectedIn.Value * SelectedOut.Value, 4, MidpointRounding.ToEven);
+                }
                 OnPropertyChanged(nameof(Value1));
+                OnPropertyChanged();
             }
         }
-        
         private async Task LoadCurrencies()
         {
             var result = await GetCurrencies.ReadJson(Date);
+            isLoading = true;
             Currencies = result.Currencies;
             Date = result.ActualDate;
-            DateText = date.ToString("D");
+            SelectedOut = Currencies.FirstOrDefault(cc => cc.CharCode == Preferences.Get("SelectedOutCC", ""), SelectedOut);
+            SelectedIn = Currencies.FirstOrDefault(cc => cc.CharCode == Preferences.Get("SelectedInCC", ""), SelectedIn);
+            isLoading = false;
         }
+        public async Task Load()
+        {
+            Date = Preferences.Get("Date", DateTime.Today);
+            Value2 = Preferences.Get("Value2", Value2);
+            Value1 = Preferences.Get("Value1", Value1);
+        }
+        public void Save()
+        {
+            Preferences.Set("Date", Date);
+            Preferences.Set("Value1", Value1);
+            Preferences.Set("Value2", Value2);
+            Preferences.Set("SelectedInCC", (SelectedIn == null ? "" : SelectedIn.CharCode));
+            Preferences.Set("SelectedOutCC", (SelectedOut == null ? "" : SelectedOut.CharCode));
+        }
+
+        private bool wasCalc = false;
+        private bool isLoading;
         public event PropertyChangedEventHandler? PropertyChanged;
         public void OnPropertyChanged([CallerMemberName] string prop = "")
         {

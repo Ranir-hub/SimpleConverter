@@ -22,6 +22,7 @@ namespace Converter
                 appWindow.Resize(new SizeInt32(400, 600));
 #endif
             });
+
         }
 
         protected override Window CreateWindow(IActivationState? activationState)
