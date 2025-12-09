@@ -25,7 +25,7 @@ namespace Converter
     public class Cbr
     {
         [JsonPropertyName("Valute")]
-        public Dictionary<string, Currency>? Valute { get; set; }
+        public Dictionary<string, Currency> Valute { get; set; }
     }
 
     public static class GetCurrencies
@@ -75,7 +75,7 @@ namespace Converter
     {
         public ConvertersViewModel()
         {
-            _ = Load();
+            Load();
         }
         private DateTime date;
         public DateTime Date
@@ -175,10 +175,10 @@ namespace Converter
                     selectedOut = value;
                     OnPropertyChanged();
 
-                    if (SelectedIn != null && SelectedOut != null && !isLoading)
+                    if (SelectedIn != null && SelectedOut != null)
                     {
-                        value1 = Math.Round(value2 / SelectedIn.Value * SelectedOut.Value, 6, MidpointRounding.ToEven);
-                        OnPropertyChanged(nameof(Value1));
+                        value2 = Math.Round(value1 * SelectedIn.Value / SelectedOut.Value, 6, MidpointRounding.ToEven);
+                        OnPropertyChanged(nameof(Value2));
                     }
                 }
             }
@@ -186,7 +186,6 @@ namespace Converter
         private async Task LoadCurrencies()
         {
             var result = await GetCurrencies.ReadJson(Date);
-            isLoading = true;
             Currencies = result.Currencies;
             Date = result.ActualDate;
             if (SelectedOut == null && SelectedIn == null)
@@ -194,9 +193,8 @@ namespace Converter
                 SelectedOut = Currencies.FirstOrDefault(cc => cc.CharCode == Preferences.Get("SelectedOutCC", ""));
                 SelectedIn = Currencies.FirstOrDefault(cc => cc.CharCode == Preferences.Get("SelectedInCC", ""));
             }
-            isLoading = false;
         }
-        public async Task Load()
+        public void Load()
         {
             Date = Preferences.Get("Date", DateTime.Today);
             Value2 = Preferences.Get("Value2", Value2);
@@ -211,7 +209,6 @@ namespace Converter
             Preferences.Set("SelectedOutCC", (SelectedOut == null ? "" : SelectedOut.CharCode));
         }
 
-        private bool isLoading;
         public event PropertyChangedEventHandler? PropertyChanged;
         public void OnPropertyChanged([CallerMemberName] string prop = "")
         {
