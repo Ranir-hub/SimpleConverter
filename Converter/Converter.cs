@@ -120,7 +120,7 @@ namespace Converter
 
                     if (SelectedIn != null && SelectedOut != null)
                     {
-                        value2 = Math.Round(value1 * SelectedIn.Value / SelectedOut.Value, 4, MidpointRounding.ToEven);
+                        value2 = Math.Round(value1 * SelectedIn.Value / SelectedOut.Value, 6, MidpointRounding.ToEven);
                         OnPropertyChanged(nameof(Value2));
                     }
                 }
@@ -139,7 +139,7 @@ namespace Converter
 
                     if (SelectedIn != null && SelectedOut != null)
                     {
-                        value1 = Math.Round(value2 / SelectedIn.Value * SelectedOut.Value, 4, MidpointRounding.ToEven);
+                        value1 = Math.Round(value2 / SelectedIn.Value * SelectedOut.Value, 6, MidpointRounding.ToEven);
                         OnPropertyChanged(nameof(Value1));
                     }
                 }
@@ -158,7 +158,7 @@ namespace Converter
 
                     if (SelectedIn != null && SelectedOut != null)
                     {
-                        value2 = Math.Round(value1 * SelectedIn.Value / SelectedOut.Value, 4, MidpointRounding.ToEven);
+                        value2 = Math.Round(value1 * SelectedIn.Value / SelectedOut.Value, 6, MidpointRounding.ToEven);
                         OnPropertyChanged(nameof(Value2));
                     }
                 }
@@ -177,7 +177,7 @@ namespace Converter
 
                     if (SelectedIn != null && SelectedOut != null && !isLoading)
                     {
-                        value1 = Math.Round(value2 / SelectedIn.Value * SelectedOut.Value, 4, MidpointRounding.ToEven);
+                        value1 = Math.Round(value2 / SelectedIn.Value * SelectedOut.Value, 6, MidpointRounding.ToEven);
                         OnPropertyChanged(nameof(Value1));
                     }
                 }
