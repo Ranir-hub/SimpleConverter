@@ -62,9 +62,13 @@ namespace Converter
                         }
                     }
                 }
-                catch (HttpRequestException)
+                catch (HttpRequestException ex) when ((int)ex.StatusCode == 404)
                 {
                     date = date.AddDays(-1);
+                }
+                catch
+                {
+                    break;
                 }
             }
             return (null, DateTime.Today);
@@ -87,7 +91,7 @@ namespace Converter
                 {
                     date = value;
                     _ = LoadCurrencies();
-                    OnPropertyChanged(nameof(Value2));
+                    OnPropertyChanged();
                     OnPropertyChanged(nameof(DateText));
                 }
             }
@@ -186,12 +190,16 @@ namespace Converter
         private async Task LoadCurrencies()
         {
             var result = await GetCurrencies.ReadJson(Date);
-            Currencies = result.Currencies;
-            Date = result.ActualDate;
-            if (SelectedOut == null && SelectedIn == null)
+            if(result.Currencies != null)
             {
-                SelectedOut = Currencies.FirstOrDefault(cc => cc.CharCode == Preferences.Get("SelectedOutCC", ""));
-                SelectedIn = Currencies.FirstOrDefault(cc => cc.CharCode == Preferences.Get("SelectedInCC", ""));
+                Currencies = result.Currencies;
+                date = result.ActualDate;
+                if (SelectedOut == null && SelectedIn == null && Currencies != null)
+                {
+                    SelectedOut = Currencies.First(cc => cc.CharCode == Preferences.Get("SelectedOutCC", ""));
+                    SelectedIn = Currencies.First(cc => cc.CharCode == Preferences.Get("SelectedInCC", ""));
+                }
+                OnPropertyChanged(nameof(DateText));
             }
         }
         public void Load()

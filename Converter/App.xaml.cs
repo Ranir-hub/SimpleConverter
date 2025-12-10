@@ -19,7 +19,7 @@ namespace Converter
                 IntPtr windowHandle = WinRT.Interop.WindowNative.GetWindowHandle(nativeWindow);
                 WindowId windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(windowHandle);
                 AppWindow appWindow = Microsoft.UI.Windowing.AppWindow.GetFromWindowId(windowId);
-                appWindow.Resize(new SizeInt32(400, 600));
+                appWindow.Resize(new SizeInt32(450, 700));
 #endif
             });
 
